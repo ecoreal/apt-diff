@@ -56,6 +56,19 @@ class SnapshotTest(unittest.TestCase, StoreMixin):
         self.assertEqual(snapmod.newest_before(store, paths[-1]), paths[-2])
         self.assertEqual(snapmod.newest_before(store, paths[0]), None)
 
+    def test_newest_before_with_relative_store(self):
+        # a relative --store makes list_snapshots return relative paths;
+        # newest_before must still match them (abspath on both sides)
+        td = tempfile.TemporaryDirectory()
+        self.addCleanup(td.cleanup)
+        workdir = tempfile.mkdtemp(dir=td.name)
+        self.addCleanup(os.chdir, os.getcwd())
+        os.chdir(workdir)
+        store = "snaps"
+        p1 = snapmod.save_snapshot(store, {"seq": 0}, ts=time.time() - 20)
+        p2 = snapmod.save_snapshot(store, {"seq": 1}, ts=time.time())
+        self.assertEqual(snapmod.newest_before(store, p2), p1)
+
     def test_prune_keeps_newest(self):
         store, paths = self.make(n=5)
         removed = snapmod.prune(store, keep=2)

@@ -79,8 +79,10 @@ def newest_before(store: str, path: str | None = None) -> str | None:
         return None
     if path is None:
         return snaps[-1]
+    # Compare absolute paths: with a relative store the listed paths are
+    # relative too, and index() on the raw strings would never match.
     try:
-        i = snaps.index(os.path.abspath(path))
+        i = [os.path.abspath(p) for p in snaps].index(os.path.abspath(path))
     except ValueError:
         return snaps[-1]
     return snaps[i - 1] if i > 0 else None
