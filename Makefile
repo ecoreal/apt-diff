@@ -18,6 +18,7 @@ integration:
 
 # Single-file zero-install executable (works over ssh/scp to any Pi/Debian).
 zipapp:
+	@mkdir -p dist
 	$(PYTHON) -m zipapp $(SRC) -o dist/apt-diff \
 		-m "apt_diff.cli:main" -p "/usr/bin/env python3" --compress
 	chmod +x dist/apt-diff

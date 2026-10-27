@@ -7,5 +7,5 @@ them over time.  Works on Debian and Raspberry Pi OS.
 Copyright 2026  MIT license.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 TOOL = "apt-diff"

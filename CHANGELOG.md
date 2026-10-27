@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.0.1 — 2026-10-28
 
+- Fixed: `make zipapp` failed on a fresh checkout because the `dist/`
+  directory did not exist yet; it is now created on demand.
 - Fixed: with a relative `--store`, `apt-diff diff` without arguments could
   compare the newest snapshot with itself and always report "no changes",
   because the previous-snapshot lookup matched raw vs absolute paths.
