@@ -1,0 +1,9 @@
+[Unit]
+Description=apt-diff nightly system state snapshot
+Documentation=man:apt-diff(1)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/apt-diff snapshot
+Nice=10
+IOSchedulingClass=idle

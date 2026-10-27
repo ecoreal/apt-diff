@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apt-diff"
+version = "1.0.0"
+description = "Snapshot dpkg packages, /etc, systemd units and listening ports; audit what changed on Debian/Raspberry Pi systems."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "apt-diff contributors" }]
+keywords = ["apt", "dpkg", "debian", "raspberry-pi", "audit", "sysadmin", "snapshot"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/example/apt-diff"
+
+[project.scripts]
+apt-diff = "apt_diff.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

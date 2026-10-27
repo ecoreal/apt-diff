@@ -1,0 +1,10 @@
+[Unit]
+Description=apt-diff: verify system matches baseline
+Documentation=man:apt-diff(1)
+After=apt-diff-snapshot.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/apt-diff check -q
+# exit 1 = changes detected; journald records the summary
+SuccessExitStatus=0

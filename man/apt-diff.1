@@ -1,0 +1,139 @@
+.TH APT-DIFF 1 "2026-10-28" "apt-diff 1.0.0" "User Commands"
+.SH NAME
+apt\-diff \- snapshot dpkg packages, /etc, systemd units and listening ports; audit what changed
+.SH SYNOPSIS
+.B apt-diff
+.RI [ \-\-store DIR ]
+.RI [ \-\-root DIR ]
+.RI [ \-\-json ]
+.RI [ \-\-no-color ]
+.RI [ \-q ]
+.I COMMAND
+.RI [ args ]
+.SH DESCRIPTION
+.B apt-diff
+captures the state of a Debian or Raspberry Pi OS system into compressed
+snapshots and diffs them over time.  Each snapshot records:
+.TP
+\(bu every installed dpkg package with version, architecture and status
+.TP
+\(bu a SHA-256 hash of every regular file under
+.I /etc
+plus symlink targets and permissions
+.TP
+\(bu systemd unit files and their enablement (via
+.BR systemctl (1)
+when available)
+.TP
+\(bu listening TCP ports parsed from
+.IR /proc/net/tcp[6]
+.TP
+\(bu kernel version, OS release and hostname
+.PP
+Snapshots are plain gzip-JSON and need no privileges to read.  A snapshot
+of a typical desktop system is well under 1 MB.
+.SH COMMANDS
+.TP
+.B init
+Take the first snapshot and mark it as the baseline.  This is the reference
+that
+.B check
+compares against.
+.TP
+.B snapshot
+Take a new snapshot and prune old ones (default retention: 30).
+.TP
+.BI diff " \fR[\fIold\fR] \fR[\fInew\fR]"
+Compare two snapshots.  Defaults: baseline (or previous) vs latest.
+Snapshot arguments may be
+.IR latest ,
+.IR baseline ,
+a timestamp such as
+.IR 20261028T120000 ,
+a file name, or a path.
+.TP
+.B check
+Diff latest against baseline.  Prints nothing and exits 0 when unchanged;
+prints a summary and exits 1 when anything changed.  Designed for cron and
+CI.
+.TP
+.B log
+List snapshots (newest first) with change counts between consecutive ones.
+.TP
+.BI show " \fR[\fIname\fR]"
+Print a one-page summary of a snapshot (default: latest).
+.TP
+.BI prune " \-\-keep N"
+Delete all but the newest N snapshots.
+.SH OPTIONS
+.TP
+.BI \-\-store " DIR"
+Snapshot directory (default
+.I /var/lib/apt-diff
+as root, else
+.IR ~/.local/share/apt-diff ).
+.TP
+.BI \-\-root " DIR"
+Inspect a different system root (chroots, test fixtures).
+.TP
+.B \-\-json
+Emit machine-readable JSON (diff, check, log).
+.TP
+.B \-\-no-color
+Disable ANSI colors.
+.TP
+.B \-q, \-\-quiet
+Quiet output.
+.SH EXIT STATUS
+.B check
+returns 0 when the system matches the baseline and 1 when it does not;
+2 on usage errors.
+.SH EXAMPLES
+.PP
+Set up nightly snapshots and get mail-like warnings:
+.PP
+.nf
+  sudo apt-diff init
+  echo "0 3 * * * root apt-diff check -q" > /etc/cron.d/apt-diff
+.fi
+.PP
+What changed since the last snapshot?
+.PP
+.nf
+  apt-diff snapshot && apt-diff diff
+.fi
+.PP
+Find the snapshot right before things broke, then inspect it:
+.PP
+.nf
+  apt-diff log
+  apt-diff diff 20261028T030000
+  apt-diff show 20261028T030000
+.fi
+.PP
+Audit a Raspberry Pi from your workstation (no install needed):
+.PP
+.nf
+  make zipapp && scp dist/apt-diff pi@raspberrypi:
+  ssh pi@raspberrypi ./apt-diff init
+.fi
+.SH FILES
+.TP
+.I /var/lib/apt-diff
+Default snapshot store (root).
+.TP
+.I ~/.local/share/apt-diff
+Default snapshot store (unprivileged users).
+.SH SEE ALSO
+.BR dpkg (1),
+.BR systemctl (1),
+.BR etckeeper (1)
+.SH BUGS
+The version comparator approximates dpkg ordering; it handles epochs,
+numeric runs and the tilde rule, which covers practical cases.
+Permission-unreadable files (e.g.
+.IR /etc/ssl/private
+when unprivileged) are recorded with an empty hash; that only ever
+produces one benign "modified" entry if permissions change.
+.SH AUTHORS
+apt-diff contributors.  MIT licensed.
