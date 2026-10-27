@@ -125,7 +125,7 @@ def render_changes_json(changes: list, meta: dict | None = None) -> str:
 
 
 def render_log(store: str, snaps: list, entries: list, palette: Palette) -> str:
-    """Render `log` output. entries: [{name, ts, size, counts or None}]"""
+    """Render `log` output. entries: [{name, size, counts or None}]"""
     lines = [palette.bold(f"Snapshots in {store}"), ""]
     if not entries:
         lines.append("  (no snapshots yet — run `apt-diff init`)")

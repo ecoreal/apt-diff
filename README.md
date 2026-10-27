@@ -58,7 +58,7 @@ deep per-file history, use etckeeper *too*; they get along.
 
 ```bash
 git clone <repo> && cd apt-diff
-make test          # 59 unit tests, no root needed
+make test          # 60 unit tests, no root needed
 sudo ./install.sh  # installs CLI + man page + bash completion + nightly timer
 sudo apt-diff init # baseline
 ```

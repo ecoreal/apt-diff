@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Fixed: with a relative `--store`, `apt-diff diff` without arguments could
+  compare the newest snapshot with itself and always report "no changes",
+  because the previous-snapshot lookup matched raw vs absolute paths.
+- Added: dedicated unit tests for the render module (+15, 60 total).
+
 ## 1.0.0 — 2026-10-28
 
 Initial release.
