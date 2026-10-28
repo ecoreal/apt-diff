@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "apt-diff"
-version = "1.0.0"
+version = "1.0.1"
 description = "Snapshot dpkg packages, /etc, systemd units and listening ports; audit what changed on Debian/Raspberry Pi systems."
 readme = "README.md"
 requires-python = ">=3.9"
