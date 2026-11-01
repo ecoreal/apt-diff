@@ -25,7 +25,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/example/apt-diff"
+Homepage = "https://github.com/ecoreal/apt-diff"
 
 [project.scripts]
 apt-diff = "apt_diff.cli:main"
