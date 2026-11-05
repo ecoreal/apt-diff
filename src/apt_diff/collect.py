@@ -18,6 +18,7 @@ import time
 from .util import sha256_file
 
 LISTEN_STATE = "0A"  # /proc/net/tcp st column value for TCP_LISTEN
+ETC_MAX_BYTES = 2 * 1024 * 1024  # default cap for hashing /etc files
 
 
 # ------------------------------------------------------------- packages ---
@@ -62,7 +63,7 @@ def _store_package(packages: dict, fields: dict) -> None:
 # ------------------------------------------------------------------ etc ---
 
 
-def collect_etc(root: str = "/", max_file_size: int = 2 * 1024 * 1024) -> dict:
+def collect_etc(root: str = "/", max_file_size: int = ETC_MAX_BYTES) -> dict:
     """Hash every regular file under /etc; record symlink targets and modes.
 
     Returns {path: {"sha": hex|None, "mode": "0644", "size": int, "target": str|None}}
@@ -74,6 +75,24 @@ def collect_etc(root: str = "/", max_file_size: int = 2 * 1024 * 1024) -> dict:
         return result
     for dirpath, dirnames, filenames in os.walk(base, followlinks=False):
         dirnames.sort()
+        # Symlinks to directories end up in dirnames and are never entered
+        # (followlinks=False) — record them here so a directory replaced by
+        # (or newly pointing through) a symlink is visible to diffs, just
+        # like the file symlinks handled below.
+        for name in dirnames:
+            full = os.path.join(dirpath, name)
+            try:
+                st = os.lstat(full)
+            except OSError:
+                continue
+            if not stat_mod.S_ISLNK(st.st_mode):
+                continue
+            rel = os.path.relpath(full, base)
+            try:
+                target = os.readlink(full)
+            except OSError:
+                target = None
+            result[rel] = {"sha": None, "mode": "", "size": 0, "target": target}
         for name in sorted(filenames):
             full = os.path.join(dirpath, name)
             rel = os.path.relpath(full, base)
@@ -234,7 +253,7 @@ def collect_system(root: str = "/") -> dict:
 # ------------------------------------------------------------------ all ---
 
 
-def collect_all(root: str = "/", etc_max_file_size: int = 2 * 1024 * 1024) -> dict:
+def collect_all(root: str = "/", etc_max_file_size: int = ETC_MAX_BYTES) -> dict:
     """Collect every subsystem into one snapshot dictionary."""
     return {
         "meta": {

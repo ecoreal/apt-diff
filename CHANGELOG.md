@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Added: symlinks to directories under /etc are now recorded in snapshots
+  (same record shape as file symlinks: target kept, no hash). Previously a
+  directory replaced by — or newly appearing as — a symlink was completely
+  invisible to the audit. Diffs against snapshots taken before this change
+  will report existing directory symlinks once as "etc-added".
+
 ## 1.0.1 — 2026-10-28
 
 - Fixed: `make zipapp` failed on a fresh checkout because the `dist/`

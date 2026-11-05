@@ -142,6 +142,29 @@ class EtcTest(unittest.TestCase, TempRootMixin):
         self.assertEqual(etc[rel]["target"], "/lib/systemd/system/sshd.service")
         self.assertIsNone(etc[rel]["sha"])
 
+    def test_directory_symlinks_recorded_with_target(self):
+        # a directory replaced by / pointing through a symlink is an auditable
+        # fact; os.walk keeps it in dirnames, so it must be handled explicitly
+        os.symlink("nginx", os.path.join(self.root, "etc", "linkdir"))
+        etc = collect.collect_etc(self.root)
+        self.assertEqual(etc["linkdir"],
+                         {"sha": None, "mode": "", "size": 0, "target": "nginx"})
+
+    def test_directory_symlinks_are_not_walked(self):
+        os.symlink("nginx", os.path.join(self.root, "etc", "linkdir"))
+        etc = collect.collect_etc(self.root)
+        self.assertNotIn("linkdir/nginx.conf", etc)
+        self.assertIn("nginx/nginx.conf", etc)
+
+    def test_max_file_size_skips_large_files(self):
+        root = self.tmp_root()
+        write(os.path.join(root, "etc/small.conf"), "x=1\n")
+        write(os.path.join(root, "etc/big.conf"), "y" * 8)
+        etc = collect.collect_etc(root, max_file_size=4)
+        self.assertIsNone(etc["big.conf"]["sha"])
+        self.assertTrue(etc["small.conf"]["sha"])
+        self.assertEqual(etc["big.conf"]["size"], 8)
+
     def test_modification_changes_hash(self):
         before = collect.collect_etc(self.root)
         write(os.path.join(self.root, "etc/hostname"), "pi\n", mode=0o644)
