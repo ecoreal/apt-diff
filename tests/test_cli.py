@@ -13,6 +13,8 @@ import unittest
 SRC = os.path.join(os.path.dirname(__file__), "..", "src")
 sys.path.insert(0, SRC)
 
+from apt_diff.cli import build_parser  # noqa: E402
+
 DPKG_V1 = """\
 Package: bash
 Status: install ok installed
@@ -188,6 +190,27 @@ class CliTest(unittest.TestCase):
         r = self.run_cli("prune", "--keep", "1")
         self.assertEqual(r.returncode, 0)
         self.assertEqual(len(os.listdir(self.store)) - 1, 1)  # -1 for baseline file
+
+    def test_snapshot_honours_etc_max(self):
+        # Regression: --etc-max used to exist only on init, so nightly
+        # snapshots silently fell back to the 2 MiB default and every diff
+        # reported a phantom /etc modification for big unchanged files.
+        big = self.sys.path("etc/big.conf")
+        with open(big, "wb") as fh:  # 3 MiB: below the 4 MiB cap, above default
+            fh.write(b"x" * (3 * 1024 * 1024))
+        r = self.run_cli("init", "--etc-max", str(4 * 1024 * 1024))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        time.sleep(1.1)  # snapshot names have 1s resolution
+        r = self.run_cli("snapshot", "--etc-max", str(4 * 1024 * 1024))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        r = self.run_cli("diff")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("No changes", r.stdout)
+
+    def test_etc_max_defaults_match_between_init_and_snapshot(self):
+        p = build_parser()
+        self.assertEqual(p.parse_args(["init"]).etc_max,
+                         p.parse_args(["snapshot"]).etc_max)
 
     def test_errors_reported(self):
         self.assertEqual(self.run_cli("diff").returncode, 2)

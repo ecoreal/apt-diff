@@ -38,12 +38,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("init", parents=[common],
                        help="take the first snapshot and mark it as baseline")
-    s.add_argument("--etc-max", type=int, default=2 * 1024 * 1024, metavar="BYTES",
+    s.add_argument("--etc-max", type=int, default=collect.ETC_MAX_BYTES, metavar="BYTES",
                    help="skip /etc files larger than this (default 2 MiB)")
 
     s = sub.add_parser("snapshot", parents=[common], help="take a new snapshot")
     s.add_argument("--keep", type=int, default=snapmod.RETAIN_DEFAULT, metavar="N",
                    help="retain the newest N snapshots (default 30)")
+    s.add_argument("--etc-max", type=int, default=collect.ETC_MAX_BYTES, metavar="BYTES",
+                   help="skip /etc files larger than this (default 2 MiB)")
 
     s = sub.add_parser("diff", parents=[common], help="compare two snapshots")
     s.add_argument("old", nargs="?", default=None,
@@ -110,7 +112,7 @@ def cmd_init(args, store: str) -> int:
 
 
 def cmd_snapshot(args, store: str) -> int:
-    data = collect.collect_all(args.root)
+    data = collect.collect_all(args.root, etc_max_file_size=args.etc_max)
     path = snapmod.save_snapshot(store, data)
     removed = snapmod.prune(store, keep=args.keep)
     _print_counts(args, data, path)

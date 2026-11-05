@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fixed: `--etc-max` existed only on `init`, so nightly `snapshot` runs
+  silently fell back to the 2 MiB default. After `init --etc-max 4M`, every
+  diff reported a phantom "etc-modified" for unchanged /etc files above 2 MiB
+  (hash present in the baseline, `null` in later snapshots). `snapshot` now
+  takes the same `--etc-max` with the same default.
 - Added: symlinks to directories under /etc are now recorded in snapshots
   (same record shape as file symlinks: target kept, no hash). Previously a
   directory replaced by — or newly appearing as — a symlink was completely

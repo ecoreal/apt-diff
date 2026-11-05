@@ -41,7 +41,11 @@ that
 compares against.
 .TP
 .B snapshot
-Take a new snapshot and prune old ones (default retention: 30).
+Take a new snapshot and prune old ones (default retention: 30).  Accepts
+the same
+.B \-\-etc-max
+option as
+.BR init .
 .TP
 .BI diff " \fR[\fIold\fR] \fR[\fInew\fR]"
 Compare two snapshots.  Defaults: baseline (or previous) vs latest.
